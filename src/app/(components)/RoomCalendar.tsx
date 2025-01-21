@@ -243,7 +243,7 @@ export default function RoomRateAvailabilityCalendar(props: IProps) {
         container
         sx={{
           height: props.isLastElement
-            ? 90 + props.room_category.rate_plans.length * 120 + 20
+            ? 90 + props.room_category.rate_plans.length * 120 + 10
             : 90 + props.room_category.rate_plans.length * 120,
         }}
       >

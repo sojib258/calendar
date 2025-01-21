@@ -130,7 +130,7 @@ export default function Page() {
   // Form control for date range picker
   const { control, watch } = useForm<CalendarForm>({
     defaultValues: {
-      date_range: [dayjs(), dayjs().add(2, "month")],
+      date_range: [dayjs(), dayjs().add(4, "month")],
     },
   });
   const watchedDateRange = watch("date_range");
@@ -306,7 +306,7 @@ export default function Page() {
             </Grid>
           </Grid>
 
-          <Grid container sx={{ height: 54 }}>
+          <Grid container sx={{ height: 48 }}>
             <Grid
               sx={{
                 borderBottom: "1px solid",
