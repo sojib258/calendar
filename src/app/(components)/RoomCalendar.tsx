@@ -1,3 +1,4 @@
+// Import necessary modules and components
 import { Box, Grid2 as Grid, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import RoomInventoryStatusCell from "./StatusCell";
@@ -17,7 +18,9 @@ import {
   IRoomCategoryCalender,
   IRoomInventory,
 } from "../(hooks)/useRoomRateAvailabilityCalendar";
+import { Person } from "@mui/icons-material";
 
+// Define the props for the RoomRateAvailabilityCalendar component
 interface IProps {
   InventoryRefs: RefObject<Array<RefObject<VariableSizeGrid | null>>>;
   handleCalenderScroll: ({ scrollLeft }: GridOnScrollProps) => void;
@@ -26,6 +29,7 @@ interface IProps {
   room_category: IRoomCategoryCalender;
 }
 
+// Define the data structure for the grid
 interface IGridData {
   type: string;
   row: string;
@@ -36,12 +40,15 @@ interface IGridData {
   };
 }
 
+// Component to render the room rate availability calendar
 export default function RoomRateAvailabilityCalendar(props: IProps) {
-  const theme = useTheme();
+  const theme = useTheme(); // Get the theme for styling
   const InventoryRef = useRef<VariableSizeGrid | null>(null);
 
+  // Store the ref in the InventoryRefs array
   props.InventoryRefs.current[props.index] = InventoryRef;
 
+  // Memoize the grid data to avoid unnecessary re-renders
   const calendarGridData = useMemo(() => {
     const data: Array<IGridData> = [
       { type: "inventory", row: "status" },
@@ -65,6 +72,7 @@ export default function RoomRateAvailabilityCalendar(props: IProps) {
     return data;
   }, [props.room_category.rate_plans]);
 
+  // Component to render each cell in the grid
   const RateCalendarGrid: React.FC<GridChildComponentProps> = memo(
     function RateCalendarGridFC({ columnIndex, rowIndex, style, data }) {
       const {
@@ -202,6 +210,7 @@ export default function RoomRateAvailabilityCalendar(props: IProps) {
     areEqual
   );
 
+  // Style the VariableSizeGrid to hide the scrollbar if it's not the last element
   const StyledVariableSizeGrid = styled(VariableSizeGrid)(
     props.isLastElement
       ? {}
@@ -315,6 +324,23 @@ export default function RoomRateAvailabilityCalendar(props: IProps) {
                 >
                   {rate_plan.name}
                 </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <Person fontSize="small" />
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 700,
+                      ml: 0.5,
+                    }}
+                  >
+                    {props.room_category.occupancy}
+                  </Typography>
+                </Box>
               </Grid>
               <Grid
                 sx={{

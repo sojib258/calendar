@@ -1,5 +1,6 @@
 "use client";
 
+// Import necessary modules and components
 import { Grid2 as Grid, Typography, Card, Box, Container } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { DateRange } from "@mui/x-date-pickers-pro";
@@ -31,10 +32,12 @@ import RoomRateAvailabilityCalendar from "./(components)/RoomCalendar";
 import Navbar from "@/components/Navbar";
 import useRoomRateAvailabilityCalendar from "./(hooks)/useRoomRateAvailabilityCalendar";
 
+// Define the form type for the date range picker
 export type CalendarForm = {
   date_range: DateRange<dayjs.Dayjs>;
 };
 
+// Style the VariableSizeList to hide the scrollbar
 const StyledVariableSizeList = styled(VariableSizeList)({
   scrollbarWidth: "none",
   msOverflowStyle: "none",
@@ -44,22 +47,18 @@ const StyledVariableSizeList = styled(VariableSizeList)({
 });
 
 export default function Page() {
-  const theme = useTheme();
+  const theme = useTheme(); // Get the theme for styling
 
-  const propertyId = 1;
+  const propertyId = 1; // Example property ID
 
-  // a special element that listens to scroll events and dispatches them to actual grid containers
+  // Refs for various elements to handle scrolling
   const rootContainerRef = useRef<HTMLDivElement>(null);
-
   const calenderMonthsRef = useRef<VariableSizeList | null>(null);
-
   const calenderDatesRef = useRef<FixedSizeGrid | null>(null);
-
-  // ref to a "canvas" div with size of entire grid. The actual DOM element that we scroll
   const mainGridContainerRef = useRef<HTMLDivElement | null>(null);
-
   const InventoryRefs = useRef<Array<RefObject<VariableSizeGrid>>>([]);
 
+  // Handle horizontal scroll for dates
   const handleDatesScroll = useCallback(({ scrollLeft }: GridOnScrollProps) => {
     InventoryRefs.current.forEach((ref) => {
       if (ref.current) {
@@ -71,6 +70,7 @@ export default function Page() {
     }
   }, []);
 
+  // Handle horizontal scroll for the entire calendar
   const handleCalenderScroll = useCallback(
     ({ scrollLeft }: GridOnScrollProps) => {
       InventoryRefs.current.forEach((ref) => {
@@ -88,6 +88,7 @@ export default function Page() {
     []
   );
 
+  // Add event listener for wheel scroll to handle horizontal scrolling
   useEffect(() => {
     const { current: rootContainer } = rootContainerRef;
     if (rootContainer) {
@@ -120,11 +121,13 @@ export default function Page() {
     }
   });
 
+  // State for calendar dates and months
   const [calenderDates, setCalenderDates] = useState<Array<dayjs.Dayjs>>([]);
   const [calenderMonths, setCalenderMonths] = useState<Array<[string, number]>>(
     []
   );
 
+  // Form control for date range picker
   const { control, watch } = useForm<CalendarForm>({
     defaultValues: {
       date_range: [dayjs(), dayjs().add(2, "month")],
@@ -132,6 +135,7 @@ export default function Page() {
   });
   const watchedDateRange = watch("date_range");
 
+  // Update calendar dates and months when the date range changes
   useEffect(() => {
     const { months, dates } = countDaysByMonth(
       watchedDateRange[0]!,
@@ -144,6 +148,7 @@ export default function Page() {
     setCalenderDates(dates);
   }, [watchedDateRange]);
 
+  // Fetch room rate availability calendar data
   const room_calendar = useRoomRateAvailabilityCalendar({
     property_id: propertyId,
     start_date: watchedDateRange[0]!.format("YYYY-MM-DD"),
@@ -153,6 +158,7 @@ export default function Page() {
     ).format("YYYY-MM-DD"),
   });
 
+  // Component to render each month row in the calendar
   const MonthRow: React.FC<ListChildComponentProps> = memo(function MonthRowFC({
     index,
     style,
@@ -187,6 +193,7 @@ export default function Page() {
   },
   areEqual);
 
+  // Component to render each date row in the calendar
   const DateRow: React.FC<GridChildComponentProps> = memo(function DateRowFC({
     columnIndex,
     style,
@@ -343,16 +350,20 @@ export default function Page() {
           </Grid>
 
           {room_calendar.isSuccess
-            ? room_calendar.data.data.map((room_category, key) => (
-                <RoomRateAvailabilityCalendar
-                  key={key}
-                  index={key}
-                  InventoryRefs={InventoryRefs}
-                  isLastElement={key === room_calendar.data.data.length - 1}
-                  room_category={room_category}
-                  handleCalenderScroll={handleCalenderScroll}
-                />
-              ))
+            ? room_calendar.data.data.room_categories.map(
+                (room_category, key) => (
+                  <RoomRateAvailabilityCalendar
+                    key={key}
+                    index={key}
+                    InventoryRefs={InventoryRefs}
+                    isLastElement={
+                      key === room_calendar.data.data.room_categories.length - 1
+                    }
+                    room_category={room_category}
+                    handleCalenderScroll={handleCalenderScroll}
+                  />
+                )
+              )
             : null}
         </Card>
       </Box>
