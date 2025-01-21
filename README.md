@@ -108,9 +108,8 @@ You can find a working Postman collection for this API [here](https://www.postma
 5. **Submission:**
    - Fork the repository and complete the assessment on your fork.
    - Commit your changes to a new branch and push it to your forked repository.
-   - Host the project on Vercel and share the live link.
+   - Host the project on Vercel/CodeSandbox and share the live link.
    - Share the link to your forked repository and the live link via email at mustakim@grit.com.bd.
-   - Ensure that all tests pass and the project runs without errors.
 
 **Deadline: 27 January 2025**
 

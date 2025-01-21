@@ -3,6 +3,8 @@ import Fetch from "@/utils/Fetch";
 import { useQuery } from "@tanstack/react-query";
 import { Dayjs } from "dayjs";
 
+// ToDo: Add infinite query support
+
 // Define interfaces for the data structures used in the calendar
 export interface IRoomInventory {
   id: string;
