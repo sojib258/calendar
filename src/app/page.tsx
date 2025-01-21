@@ -1,7 +1,14 @@
 "use client";
 
 // Import necessary modules and components
-import { Grid2 as Grid, Typography, Card, Box, Container } from "@mui/material";
+import {
+  Grid2 as Grid,
+  Typography,
+  Card,
+  Box,
+  Container,
+  CircularProgress,
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { DateRange } from "@mui/x-date-pickers-pro";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
@@ -365,6 +372,18 @@ export default function Page() {
                 )
               )
             : null}
+          {room_calendar.isLoading && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
         </Card>
       </Box>
       <Box

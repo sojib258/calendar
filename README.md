@@ -111,7 +111,7 @@ You can find a working Postman collection for this API [here](https://www.postma
    - Host the project on Vercel/CodeSandbox and share the live link.
    - Share the link to your forked repository and the live link via email at mustakim@grit.com.bd.
 
-**Deadline: 27 January 2025**
+**Deadline: 30 January 2025**
 
 ## Additional Notes
 
