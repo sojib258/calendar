@@ -3,6 +3,7 @@
 // Import necessary modules and components
 import {
   DateRow,
+  Loading,
   MonthRow,
   PageLayout,
   RoomCalendar as RoomRateAvailabilityCalendar,
@@ -10,7 +11,7 @@ import {
 } from "@/components";
 import { useRoomRateAvailabilityCalendar } from "@/hooks";
 import { countDaysByMonth } from "@/utils";
-import { Box, Card, CircularProgress, Grid2 as Grid } from "@mui/material";
+import { Box, Card, Grid2 as Grid } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import { DateRange } from "@mui/x-date-pickers-pro";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
@@ -165,6 +166,12 @@ export default function Page() {
     <DateRow {...props} calenderDates={calenderDates} />
   );
 
+  if (room_calendar?.isLoading) {
+    return <Loading />;
+  }
+
+  console.log("RoomCalendar", room_calendar);
+
   return (
     <PageLayout>
       <Box>
@@ -255,15 +262,16 @@ export default function Page() {
             </Grid>
           </Grid>
 
-          {room_calendar.isSuccess
-            ? room_calendar.data.data.room_categories.map(
+          {room_calendar?.isSuccess
+            ? room_calendar?.data?.data?.room_categories?.map(
                 (room_category, key) => (
                   <RoomRateAvailabilityCalendar
                     key={key}
                     index={key}
                     InventoryRefs={InventoryRefs}
                     isLastElement={
-                      key === room_calendar.data.data.room_categories.length - 1
+                      key ===
+                      room_calendar?.data?.data?.room_categories?.length - 1
                     }
                     room_category={room_category}
                     handleCalenderScroll={handleCalenderScroll}
@@ -271,18 +279,6 @@ export default function Page() {
                 )
               )
             : null}
-          {room_calendar.isLoading && (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "100%",
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          )}
         </Card>
       </Box>
     </PageLayout>

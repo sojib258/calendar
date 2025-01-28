@@ -1,21 +1,23 @@
+"use client";
 import { Box } from "@mui/material";
 import Lottie from "react-lottie";
 
-import * as animationData from "@/../public/loading.json";
+import animation from "@/../public/loading.json";
 
 const Loading = () => {
   const defaultOptions = {
     loop: true,
     autoplay: true,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
+    animationData: animation,
   };
 
   return (
-    <Box>
-      <Lottie options={defaultOptions} />
+    <Box width="100%" height="100vh">
+      <Lottie
+        style={{ width: "300px", height: "100vh" }}
+        options={defaultOptions}
+        isClickToPauseDisabled={true}
+      />
     </Box>
   );
 };
