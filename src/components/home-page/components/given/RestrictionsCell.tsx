@@ -1,12 +1,9 @@
-import { styled } from "@mui/material/styles";
-import { Box, InputAdornment, TextField } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { Controller, useForm } from "react-hook-form";
+"use client";
+import { IRateCalendar, IRoomInventory } from "@/hooks";
 import { ErrorOutline } from "@mui/icons-material";
-import {
-  IRateCalendar,
-  IRoomInventory,
-} from "../(hooks)/useRoomRateAvailabilityCalendar";
+import { Box, InputAdornment, TextField } from "@mui/material";
+import { styled, useTheme } from "@mui/material/styles";
+import { Controller, useForm } from "react-hook-form";
 
 interface IProps {
   rate_plan: {

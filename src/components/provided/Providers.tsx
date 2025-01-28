@@ -1,8 +1,8 @@
 "use client";
 
-import QueryProvider from "@/components/QueryProvider";
-import { LocalizationProvider } from "@mui/x-date-pickers-pro/LocalizationProvider";
+import QueryProvider from "@/components/provided/QueryProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers-pro/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers-pro/LocalizationProvider";
 import NotistackProvider from "./NotistackProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {

@@ -1,6 +1,7 @@
+"use client";
+import { IRoomInventory } from "@/hooks";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { IRoomInventory } from "../(hooks)/useRoomRateAvailabilityCalendar";
 
 interface IProps {
   inventory: IRoomInventory;

@@ -21,6 +21,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
+    "react-lottie": "^1.2.10",
     "react-virtualized-auto-sizer": "^1.0.25",
     "react-window": "^1.8.11"
   },
@@ -29,6 +30,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-lottie": "^1.2.10",
     "@types/react-window": "^1.8.8",
     "eslint": "^9",
     "eslint-config-next": "15.1.5",
