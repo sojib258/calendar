@@ -1,14 +1,7 @@
 "use client";
 
 // Import necessary modules and components
-import {
-  DateRow,
-  Loading,
-  MonthRow,
-  PageLayout,
-  RoomCalendar as RoomRateAvailabilityCalendar,
-  Title,
-} from "@/components";
+import { DateRow, Loading, MonthRow, PageLayout, Title } from "@/components";
 import { useRoomRateAvailabilityCalendar } from "@/hooks";
 import { countDaysByMonth } from "@/utils";
 import { Box, Card, Grid2 as Grid } from "@mui/material";
@@ -28,6 +21,7 @@ import {
   VariableSizeGrid,
   VariableSizeList,
 } from "react-window";
+import RoomRateAvailabilityCalendar from "./components/given/RoomCalendar";
 import { sizes } from "./sizes";
 
 // Define the form type for the date range picker
@@ -166,11 +160,15 @@ export default function Page() {
     <DateRow {...props} calenderDates={calenderDates} />
   );
 
-  if (room_calendar?.isLoading) {
+  if (status === "pending") {
     return <Loading />;
   }
 
-  console.log("RoomCalendar", room_calendar);
+  // const allRoomCategories =
+  //   data?.pages.flatMap((page) => page.room_categories) ?? [];
+
+  // console.log("All Room Categories", allRoomCategories);
+  // console.log("Data", data);
 
   return (
     <PageLayout>
@@ -262,23 +260,39 @@ export default function Page() {
             </Grid>
           </Grid>
 
-          {room_calendar?.isSuccess
-            ? room_calendar?.data?.data?.room_categories?.map(
-                (room_category, key) => (
-                  <RoomRateAvailabilityCalendar
-                    key={key}
-                    index={key}
-                    InventoryRefs={InventoryRefs}
-                    isLastElement={
-                      key ===
-                      room_calendar?.data?.data?.room_categories?.length - 1
-                    }
-                    room_category={room_category}
-                    handleCalenderScroll={handleCalenderScroll}
-                  />
-                )
+          {room_calendar.isLoading ? (
+            <div>Loading...</div>
+          ) : room_calendar.isSuccess ? (
+            room_calendar.data.pages
+              .map((page) =>
+                page.room_categories.map((room_category, key) => {
+                  const totalRoomCategories = room_calendar.data.pages.reduce(
+                    (total, currentPage) =>
+                      total + currentPage.room_categories.length,
+                    0
+                  );
+
+                  console.log(
+                    "Key",
+                    key,
+                    "TotalCategories",
+                    totalRoomCategories
+                  );
+
+                  return (
+                    <RoomRateAvailabilityCalendar
+                      key={`${room_category.id}-${key}`}
+                      index={key}
+                      InventoryRefs={InventoryRefs}
+                      isLastElement={key === totalRoomCategories - 1}
+                      room_category={room_category}
+                      handleCalenderScroll={handleCalenderScroll}
+                    />
+                  );
+                })
               )
-            : null}
+              .flat()
+          ) : null}
         </Card>
       </Box>
     </PageLayout>

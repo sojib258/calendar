@@ -1,11 +1,8 @@
-// Import necessary modules and types
 import Fetch from "@/utils/Fetch";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Dayjs } from "dayjs";
 
-// ToDo: Add infinite query support
-
-// Define interfaces for the data structures used in the calendar
+// Your existing interfaces remain the same
 export interface IRoomInventory {
   id: string;
   date: Dayjs;
@@ -42,38 +39,54 @@ export interface IRoomCategoryCalender extends IRoomCategory {
   rate_plans: Array<IRatePlanCalendar>;
 }
 
-// Define the parameters and response interfaces for the hook
 interface IParams {
   property_id: number;
   start_date: string;
   end_date: string;
+  pageSize?: number;
 }
 
 interface IResponse {
   room_categories: Array<IRoomCategoryCalender>;
-  nextCursor?: number; // available if you pass a cursor as query param
+  nextCursor?: number;
 }
 
-// Custom hook to fetch room rate availability calendar data
+// If your Fetch utility wraps the response in a Result type, define it here
+interface IResult<T> {
+  data: T;
+  success: boolean;
+  // add other properties that your Fetch returns
+}
+
 export default function useRoomRateAvailabilityCalendar(params: IParams) {
-  // Construct the URL with query parameters
-  const url = new URL(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/property/${params.property_id}/rate-calendar/assessment`
-  );
+  return useInfiniteQuery({
+    queryKey: ["property_room_calendar", params],
 
-  url.search = new URLSearchParams({
-    start_date: params.start_date,
-    end_date: params.end_date,
-    // cursor: "0", // for infinite scroll
-  }).toString();
+    queryFn: async ({ pageParam = 0 }) => {
+      const url = new URL(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/property/${params.property_id}/rate-calendar/assessment`
+      );
 
-  // Use React Query's useQuery hook to fetch data
-  return useQuery({
-    queryKey: ["property_room_calendar", params], // Unique query key
-    queryFn: async () =>
-      await Fetch<IResponse>({
+      url.search = new URLSearchParams({
+        start_date: params.start_date,
+        end_date: params.end_date,
+        cursor: pageParam.toString(),
+        pageSize: (params.pageSize || 30).toString(),
+      }).toString();
+
+      const result = await Fetch<IResponse>({
         method: "GET",
         url,
-      }), // Fetch data from the API
+      });
+
+      return result.data; // Return the actual response data
+    },
+
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+
+    // Remove hasNextPage as it's not needed in the options
+    // TanStack Query determines this automatically based on getNextPageParam
+
+    initialPageParam: 0,
   });
 }
