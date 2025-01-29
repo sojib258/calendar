@@ -52,11 +52,6 @@ interface IResponse {
 }
 
 // If your Fetch utility wraps the response in a Result type, define it here
-interface IResult<T> {
-  data: T;
-  success: boolean;
-  // add other properties that your Fetch returns
-}
 
 export default function useRoomRateAvailabilityCalendar(params: IParams) {
   return useInfiniteQuery({
@@ -87,6 +82,6 @@ export default function useRoomRateAvailabilityCalendar(params: IParams) {
     // Remove hasNextPage as it's not needed in the options
     // TanStack Query determines this automatically based on getNextPageParam
 
-    initialPageParam: 0,
+    initialPageParam: 1,
   });
 }

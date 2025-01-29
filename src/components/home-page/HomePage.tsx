@@ -1,10 +1,16 @@
 "use client";
 
 // Import necessary modules and components
-import { DateRow, MonthRow, PageLayout, Title } from "@/components";
+import {
+  CalendarSection,
+  DateRow,
+  MonthRow,
+  PageLayout,
+  Title,
+} from "@/components";
 import { useRoomRateAvailabilityCalendar } from "@/hooks";
 import { countDaysByMonth } from "@/utils";
-import { Box, Card, CircularProgress, Grid2 as Grid } from "@mui/material";
+import { Box, Card, Grid2 as Grid } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import { DateRange } from "@mui/x-date-pickers-pro";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
@@ -22,7 +28,6 @@ import {
   VariableSizeGrid,
   VariableSizeList,
 } from "react-window";
-import RoomRateAvailabilityCalendar from "./components/given/RoomCalendar";
 import { sizes } from "./sizes";
 
 // Define the form type for the date range picker
@@ -282,41 +287,13 @@ export default function Page() {
             </Grid>
           </Grid>
 
-          {room_calendar.isSuccess && room_calendar.data?.pages?.length > 0 ? (
-            <>
-              {room_calendar.data.pages.map((page, pageIndex) => (
-                <Box key={pageIndex}>
-                  {page.room_categories.map((room_category, index) => (
-                    <RoomRateAvailabilityCalendar
-                      key={room_category.id}
-                      index={index}
-                      InventoryRefs={InventoryRefs}
-                      isLastElement={
-                        pageIndex === room_calendar.data.pages.length - 1
-                      }
-                      room_category={room_category}
-                      handleCalenderScroll={handleCalenderScroll}
-                    />
-                  ))}
-                </Box>
-              ))}
-              <Box ref={ref} />
-            </>
-          ) : null}
-
-          {room_calendar.isLoading ||
-            (room_calendar?.isFetchingNextPage && (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                }}
-              >
-                <CircularProgress />
-              </Box>
-            ))}
+          {/* Make a component for better code readability */}
+          <CalendarSection
+            room_calendar={room_calendar}
+            InventoryRefs={InventoryRefs}
+            handleCalenderScroll={handleCalenderScroll}
+            observerRef={ref}
+          />
         </Card>
       </Box>
     </PageLayout>
