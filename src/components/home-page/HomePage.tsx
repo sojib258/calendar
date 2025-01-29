@@ -123,12 +123,6 @@ export default function Page() {
     <DateRow {...props} calenderDates={calenderDates} />
   );
 
-  // const allRoomCategories =
-  //   data?.pages.flatMap((page) => page.room_categories) ?? [];
-
-  // console.log("All Room Categories", allRoomCategories);
-  // console.log("Data", data);
-
   const fetchNextPage = useCallback(() => {
     if (room_calendar.hasNextPage && !room_calendar.isFetchingNextPage) {
       room_calendar.fetchNextPage();
