@@ -1,10 +1,10 @@
 "use client";
 
 // Import necessary modules and components
-import { DateRow, Loading, MonthRow, PageLayout, Title } from "@/components";
+import { DateRow, MonthRow, PageLayout, Title } from "@/components";
 import { useRoomRateAvailabilityCalendar } from "@/hooks";
 import { countDaysByMonth } from "@/utils";
-import { Box, Card, Grid2 as Grid } from "@mui/material";
+import { Box, Card, CircularProgress, Grid2 as Grid } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import { DateRange } from "@mui/x-date-pickers-pro";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
@@ -12,6 +12,7 @@ import { SingleInputDateRangeField } from "@mui/x-date-pickers-pro/SingleInputDa
 import dayjs from "dayjs";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useInView } from "react-intersection-observer";
 import AutoSizer from "react-virtualized-auto-sizer";
 import {
   FixedSizeGrid,
@@ -50,6 +51,9 @@ export default function Page() {
   const mainGridContainerRef = useRef<HTMLDivElement | null>(null);
   const InventoryRefs = useRef<Array<RefObject<VariableSizeGrid>>>([]);
 
+  // handle fetch new data when page is in view
+  const { ref, inView } = useInView();
+
   // Handle horizontal scroll for dates
   const handleDatesScroll = useCallback(({ scrollLeft }: GridOnScrollProps) => {
     InventoryRefs.current.forEach((ref) => {
@@ -79,6 +83,54 @@ export default function Page() {
     },
     []
   );
+
+  // State for calendar dates and months
+  const [calenderDates, setCalenderDates] = useState<Array<dayjs.Dayjs>>([]);
+  const [calenderMonths, setCalenderMonths] = useState<Array<[string, number]>>(
+    []
+  );
+
+  // Form control for date range picker
+  const { control, watch } = useForm<CalendarForm>({
+    defaultValues: {
+      date_range: [dayjs(), dayjs().add(4, "month")],
+    },
+  });
+  const watchedDateRange = watch("date_range");
+
+  // Fetch room rate availability calendar data
+  const room_calendar = useRoomRateAvailabilityCalendar({
+    property_id: propertyId,
+    start_date: watchedDateRange[0]!.format("YYYY-MM-DD"),
+    end_date: (watchedDateRange[1]
+      ? watchedDateRange[1]
+      : watchedDateRange[0]!.add(2, "month")
+    ).format("YYYY-MM-DD"),
+  });
+
+  // Component to render each month row in the calendar
+  const MonthRowComponent = (props: ListChildComponentProps) => (
+    <MonthRow {...props} calenderMonths={calenderMonths} />
+  );
+
+  // Component to render each date row in the calendar
+  const DateRowComponent = (props: GridChildComponentProps) => (
+    <DateRow {...props} calenderDates={calenderDates} />
+  );
+
+  // const allRoomCategories =
+  //   data?.pages.flatMap((page) => page.room_categories) ?? [];
+
+  // console.log("All Room Categories", allRoomCategories);
+  // console.log("Data", data);
+
+  const fetchNextPage = useCallback(() => {
+    if (room_calendar.hasNextPage && !room_calendar.isFetchingNextPage) {
+      room_calendar.fetchNextPage();
+    }
+  }, [room_calendar]);
+
+  // UseEffect Hooks
 
   // Add event listener for wheel scroll to handle horizontal scrolling
   useEffect(() => {
@@ -113,20 +165,6 @@ export default function Page() {
     }
   });
 
-  // State for calendar dates and months
-  const [calenderDates, setCalenderDates] = useState<Array<dayjs.Dayjs>>([]);
-  const [calenderMonths, setCalenderMonths] = useState<Array<[string, number]>>(
-    []
-  );
-
-  // Form control for date range picker
-  const { control, watch } = useForm<CalendarForm>({
-    defaultValues: {
-      date_range: [dayjs(), dayjs().add(4, "month")],
-    },
-  });
-  const watchedDateRange = watch("date_range");
-
   // Update calendar dates and months when the date range changes
   useEffect(() => {
     const { months, dates } = countDaysByMonth(
@@ -140,38 +178,22 @@ export default function Page() {
     setCalenderDates(dates);
   }, [watchedDateRange]);
 
-  // Fetch room rate availability calendar data
-  const room_calendar = useRoomRateAvailabilityCalendar({
-    property_id: propertyId,
-    start_date: watchedDateRange[0]!.format("YYYY-MM-DD"),
-    end_date: (watchedDateRange[1]
-      ? watchedDateRange[1]
-      : watchedDateRange[0]!.add(2, "month")
-    ).format("YYYY-MM-DD"),
-  });
+  useEffect(() => {
+    const pages = room_calendar?.data?.pages;
 
-  // Component to render each month row in the calendar
-  const MonthRowComponent = (props: ListChildComponentProps) => (
-    <MonthRow {...props} calenderMonths={calenderMonths} />
-  );
+    // Check if any page has an empty room_categories array
+    const hasEmptyCategory = pages?.some(
+      (page) => page.room_categories.length === 0
+    );
 
-  // Component to render each date row in the calendar
-  const DateRowComponent = (props: GridChildComponentProps) => (
-    <DateRow {...props} calenderDates={calenderDates} />
-  );
-
-  if (status === "pending") {
-    return <Loading />;
-  }
-
-  // const allRoomCategories =
-  //   data?.pages.flatMap((page) => page.room_categories) ?? [];
-
-  // console.log("All Room Categories", allRoomCategories);
-  // console.log("Data", data);
+    // Fetch next page if in view and no empty categories
+    if (inView && !hasEmptyCategory) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, room_calendar]);
 
   return (
-    <PageLayout>
+    <PageLayout isLoading={room_calendar?.isLoading}>
       <Box>
         <Card elevation={1} sx={{ padding: 4, mt: 4 }}>
           <Grid container columnSpacing={2}>
@@ -260,39 +282,41 @@ export default function Page() {
             </Grid>
           </Grid>
 
-          {room_calendar.isLoading ? (
-            <div>Loading...</div>
-          ) : room_calendar.isSuccess ? (
-            room_calendar.data.pages
-              .map((page) =>
-                page.room_categories.map((room_category, key) => {
-                  const totalRoomCategories = room_calendar.data.pages.reduce(
-                    (total, currentPage) =>
-                      total + currentPage.room_categories.length,
-                    0
-                  );
-
-                  console.log(
-                    "Key",
-                    key,
-                    "TotalCategories",
-                    totalRoomCategories
-                  );
-
-                  return (
+          {room_calendar.isSuccess && room_calendar.data?.pages?.length > 0 ? (
+            <>
+              {room_calendar.data.pages.map((page, pageIndex) => (
+                <Box key={pageIndex}>
+                  {page.room_categories.map((room_category, index) => (
                     <RoomRateAvailabilityCalendar
-                      key={`${room_category.id}-${key}`}
-                      index={key}
+                      key={room_category.id}
+                      index={index}
                       InventoryRefs={InventoryRefs}
-                      isLastElement={key === totalRoomCategories - 1}
+                      isLastElement={
+                        pageIndex === room_calendar.data.pages.length - 1
+                      }
                       room_category={room_category}
                       handleCalenderScroll={handleCalenderScroll}
                     />
-                  );
-                })
-              )
-              .flat()
+                  ))}
+                </Box>
+              ))}
+              <Box ref={ref} />
+            </>
           ) : null}
+
+          {room_calendar.isLoading ||
+            (room_calendar?.isFetchingNextPage && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "100%",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ))}
         </Card>
       </Box>
     </PageLayout>

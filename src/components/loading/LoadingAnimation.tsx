@@ -4,7 +4,7 @@ import Lottie from "react-lottie";
 
 import animation from "@/../public/loading.json";
 
-const Loading = () => {
+const LoadingAnimation = () => {
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -22,4 +22,4 @@ const Loading = () => {
   );
 };
 
-export default Loading;
+export default LoadingAnimation;
