@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // CalendarSection.tsx
 import { LoadingSpinner } from "@/components/loading";
-import { IRoomCategoryCalender } from "@/hooks"; // Assuming this is where your interfaces are
+import { IRoomCategoryCalender } from "@/hooks";
 import { Box } from "@mui/material";
 import { memo, RefObject, useMemo } from "react";
 import { VariableSizeGrid } from "react-window";
@@ -27,7 +27,7 @@ interface CalendarSectionProps {
 }
 
 // Separate calendar item component
-const CalendarItem = memo(
+export const CalendarItem = memo(
   ({
     room_category,
     index,

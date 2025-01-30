@@ -1,5 +1,5 @@
-import { IFetchError } from "@/types";
 import { enqueueSnackbar } from "notistack";
+import { IFetchError } from "@/types";
 
 interface Props {
   method: string;
