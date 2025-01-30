@@ -1,4 +1,3 @@
-"use client";
 import { IRateCalendar, IRoomInventory } from "@/hooks";
 import { ErrorOutline } from "@mui/icons-material";
 import { Box, InputAdornment, TextField } from "@mui/material";

@@ -1,22 +1,23 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Import necessary modules and components
-import {
-  CalendarSection,
-  DateRow,
-  MonthRow,
-  PageLayout,
-  Title,
-} from "@/components";
 import { useRoomRateAvailabilityCalendar } from "@/hooks";
 import { countDaysByMonth } from "@/utils";
-import { Box, Card, Grid2 as Grid } from "@mui/material";
+import { Box, Card, CircularProgress, Grid2 as Grid } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import { DateRange } from "@mui/x-date-pickers-pro";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
 import { SingleInputDateRangeField } from "@mui/x-date-pickers-pro/SingleInputDateRangeField";
 import dayjs from "dayjs";
-import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import {
+  RefObject,
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useInView } from "react-intersection-observer";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -27,7 +28,12 @@ import {
   ListChildComponentProps,
   VariableSizeGrid,
   VariableSizeList,
+  areEqual,
 } from "react-window";
+import { PageLayout } from "../layout";
+import { Title } from "./components/custom-made";
+import { RoomCalendar as RoomRateAvailabilityCalendar } from "./components/given/index";
+import { dateRowCss, loadingCss, monthRowCss, monthRowStickyCss } from "./css";
 import { sizes } from "./sizes";
 
 // Define the form type for the date range picker
@@ -55,8 +61,6 @@ export default function Page() {
   const calenderDatesRef = useRef<FixedSizeGrid | null>(null);
   const mainGridContainerRef = useRef<HTMLDivElement | null>(null);
   const InventoryRefs = useRef<Array<RefObject<VariableSizeGrid>>>([]);
-
-  // handle fetch new data when page is in view
   const { ref, inView } = useInView();
 
   // Handle horizontal scroll for dates
@@ -114,14 +118,39 @@ export default function Page() {
   });
 
   // Component to render each month row in the calendar
-  const MonthRowComponent = (props: ListChildComponentProps) => (
-    <MonthRow {...props} calenderMonths={calenderMonths} />
-  );
+  const MonthRow: React.FC<ListChildComponentProps> = memo(function MonthRowFC({
+    index,
+    style,
+  }) {
+    const month = calenderMonths[index][0];
+
+    return (
+      <Box style={style}>
+        <Box sx={{ ...monthRowCss, borderColor: theme.palette.divider }}>
+          <Box component="span" sx={monthRowStickyCss}>
+            {month}
+          </Box>
+        </Box>
+      </Box>
+    );
+  },
+  areEqual);
 
   // Component to render each date row in the calendar
-  const DateRowComponent = (props: GridChildComponentProps) => (
-    <DateRow {...props} calenderDates={calenderDates} />
-  );
+  const DateRow: React.FC<GridChildComponentProps> = memo(function DateRowFC({
+    columnIndex,
+    style,
+  }) {
+    return (
+      <Box style={style}>
+        <Box sx={{ ...dateRowCss, borderColor: theme.palette.divider }}>
+          <Box>{calenderDates[columnIndex].format("ddd")}</Box>
+          <Box>{calenderDates[columnIndex].format("DD")}</Box>
+        </Box>
+      </Box>
+    );
+  },
+  areEqual);
 
   const fetchNextPage = useCallback(() => {
     if (room_calendar.hasNextPage && !room_calendar.isFetchingNextPage) {
@@ -129,7 +158,18 @@ export default function Page() {
     }
   }, [room_calendar]);
 
-  // UseEffect Hooks
+  // Update calendar dates and months when the date range changes
+  useEffect(() => {
+    const { months, dates } = countDaysByMonth(
+      watchedDateRange[0]!,
+      watchedDateRange[1]
+        ? watchedDateRange[1]
+        : watchedDateRange[0]!.add(2, "month")
+    );
+
+    setCalenderMonths(months);
+    setCalenderDates(dates);
+  }, [watchedDateRange]);
 
   // Add event listener for wheel scroll to handle horizontal scrolling
   useEffect(() => {
@@ -164,19 +204,6 @@ export default function Page() {
     }
   });
 
-  // Update calendar dates and months when the date range changes
-  useEffect(() => {
-    const { months, dates } = countDaysByMonth(
-      watchedDateRange[0]!,
-      watchedDateRange[1]
-        ? watchedDateRange[1]
-        : watchedDateRange[0]!.add(2, "month")
-    );
-
-    setCalenderMonths(months);
-    setCalenderDates(dates);
-  }, [watchedDateRange]);
-
   useEffect(() => {
     const pages = room_calendar?.data?.pages;
 
@@ -192,12 +219,12 @@ export default function Page() {
   }, [inView, fetchNextPage, room_calendar]);
 
   return (
-    <PageLayout isLoading={room_calendar?.isLoading}>
+    <PageLayout isLoading={room_calendar.isLoading}>
       <Box>
         <Card elevation={1} sx={{ padding: 4, mt: 4 }}>
           <Grid container columnSpacing={2}>
             <Grid size={12}>
-              <Title color="black">Rate Calendars</Title>
+              <Title>Rate Calendar</Title>
             </Grid>
 
             <Grid size={4}>
@@ -245,7 +272,7 @@ export default function Page() {
                     layout="horizontal"
                     ref={calenderMonthsRef}
                   >
-                    {MonthRowComponent}
+                    {MonthRow}
                   </StyledVariableSizeList>
                 )}
               </AutoSizer>
@@ -274,20 +301,41 @@ export default function Page() {
                     outerRef={mainGridContainerRef}
                     onScroll={handleDatesScroll}
                   >
-                    {DateRowComponent}
+                    {DateRow}
                   </FixedSizeGrid>
                 )}
               </AutoSizer>
             </Grid>
           </Grid>
 
-          {/* Make a component for better code readability */}
-          <CalendarSection
-            room_calendar={room_calendar}
-            InventoryRefs={InventoryRefs}
-            handleCalenderScroll={handleCalenderScroll}
-            observerRef={ref}
-          />
+          {room_calendar?.data?.pages.map((page: any, pageIndex: number) => {
+            const isLastElement =
+              pageIndex === room_calendar.data.pages.length - 1;
+
+            return (
+              <Box key={pageIndex}>
+                {page.room_categories.map(
+                  (room_category: any, index: number) => (
+                    <RoomRateAvailabilityCalendar
+                      key={room_category.id}
+                      index={index}
+                      InventoryRefs={InventoryRefs}
+                      isLastElement={isLastElement}
+                      room_category={room_category}
+                      handleCalenderScroll={handleCalenderScroll}
+                    />
+                  )
+                )}
+              </Box>
+            );
+          })}
+          <Box ref={ref} />
+          {room_calendar.isLoading ||
+            (room_calendar?.isFetching && (
+              <Box sx={loadingCss}>
+                <CircularProgress />
+              </Box>
+            ))}
         </Card>
       </Box>
     </PageLayout>

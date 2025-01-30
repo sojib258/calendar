@@ -5,7 +5,7 @@ import { FC } from "react";
 type TitleProps = TypographyProps & {
   children?: React.ReactNode;
 };
-const Title: FC<TitleProps> = ({ children, ...props }) => {
+const Title: FC<TitleProps> = ({ children }) => {
   return (
     <Typography
       variant="h5"
@@ -14,7 +14,6 @@ const Title: FC<TitleProps> = ({ children, ...props }) => {
         fontWeight: 700,
         mb: 0,
       }}
-      {...props}
     >
       {children}
     </Typography>
