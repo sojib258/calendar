@@ -1,3 +1,4 @@
+"use client";
 import Logo from "@/../public/grit_logo-black.svg";
 import AppBar from "@mui/material/AppBar";
 import Button from "@mui/material/Button";
