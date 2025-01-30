@@ -1,3 +1,4 @@
+"use client";
 import { Footer, LoadingAnimation, Navbar } from "@/components";
 import { Container, ContainerProps } from "@mui/material";
 import React, { FC } from "react";
